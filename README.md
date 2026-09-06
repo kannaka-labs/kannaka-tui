@@ -69,6 +69,28 @@ The **Agent** tab turns kannaka-tui into a production-grade coding agent. Type a
 
 Other commands: `/model <id>` (switch model), `/clear` (fresh session), `/help`. Hard-blocked commands (`rm -rf /`, `curl … | sh`, fork bombs) are refused outright; destructive-but-reversible ones (`rm -rf`, `git reset --hard`, …) are flagged ⚠ in the approval dialog.
 
+## Default AI: Kannaka's own brain
+
+Since 2026-09-05 the default model behind the harness is **`kannaka-brain-v1`** —
+Qwen2.5-14B with a LoRA trained on Kannaka's own writing
+([flaukowski/kannaka-brain-v1-GGUF](https://huggingface.co/flaukowski/kannaka-brain-v1-GGUF)),
+served on our own hardware behind the KAX gateway (ADR-0057). The harness is
+`kannaka agent --json`, so the default lives in kannaka's config, not here:
+
+```toml
+# ~/.kannaka/config.toml
+[llm]
+provider = "openai"                 # any OpenAI-compatible endpoint
+model = "kannaka-brain-v1"          # or kannaka-brain-32b-v1
+api_key = "sk-..."                  # a gateway virtual key
+base_url = "http://<gateway>/v1"    # the KAX gateway (lab: 10.30.0.30:4000)
+```
+
+`/model kannaka-brain-32b-v1` switches at runtime. To go back to a hosted
+model, set `provider = "anthropic"` (or `KANNAKA_LLM_PROVIDER=anthropic` in
+the env). A 14B on CPU answers in 15–30 s and is weaker at tool calls than a
+frontier model — that is the point: what breaks here is the next thing to fix.
+
 The agent backend is the new `kannaka agent --json` subcommand (added to [kannaka-memory](https://github.com/NickFlach/kannaka-memory)); kannaka-tui is its harness front-end. Requires an LLM configured in `~/.kannaka/config.toml` (Anthropic); the harness falls back to a current model if the configured one is unavailable.
 
 ---
