@@ -4372,39 +4372,30 @@ fn render_approval_modal(f: &mut Frame, area: Rect, p: &PendingApproval) {
 
 fn bus_subject_color(subject: &str) -> Color {
     if subject.starts_with("QUEEN.phase.") {
-        return DIM;
+        DIM
+    } else if subject.starts_with("QUEEN.") {
+        Color::Rgb(180, 140, 255)
+    } else if subject == "KANNAKA.consciousness" {
+        ACCENT
+    } else if subject == "KANNAKA.memory.new" {
+        SUCCESS
+    } else if subject == "KANNAKA.substrate.phi" {
+        INFO
+    } else if subject == "KANNAKA.dreams" {
+        WARNING
+    } else if subject.starts_with("KANNAKA.") {
+        ACCENT
+    } else if subject.starts_with("RADIO.") {
+        Color::Rgb(255, 100, 200)
+    } else if subject.starts_with("KAX.") {
+        Color::Rgb(100, 200, 255)
+    } else if subject.starts_with("EYE.") {
+        Color::Rgb(255, 200, 100)
+    } else if subject == "tui.error" {
+        ERROR
+    } else {
+        TEXT
     }
-    if subject.starts_with("QUEEN.") {
-        return Color::Rgb(180, 140, 255);
-    }
-    if subject == "KANNAKA.consciousness" {
-        return ACCENT;
-    }
-    if subject == "KANNAKA.memory.new" {
-        return SUCCESS;
-    }
-    if subject == "KANNAKA.substrate.phi" {
-        return INFO;
-    }
-    if subject == "KANNAKA.dreams" {
-        return WARNING;
-    }
-    if subject.starts_with("KANNAKA.") {
-        return ACCENT;
-    }
-    if subject.starts_with("RADIO.") {
-        return Color::Rgb(255, 100, 200);
-    }
-    if subject.starts_with("KAX.") {
-        return Color::Rgb(100, 200, 255);
-    }
-    if subject.starts_with("EYE.") {
-        return Color::Rgb(255, 200, 100);
-    }
-    if subject == "tui.error" {
-        return ERROR;
-    }
-    TEXT
 }
 
 fn render_input(f: &mut Frame, app: &App, area: Rect) {
