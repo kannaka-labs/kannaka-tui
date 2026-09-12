@@ -787,12 +787,9 @@ impl App {
             }
         };
         self.harness_stdin = child.stdin.take();
-        let stdout = match child.stdout.take() {
-            Some(s) => s,
-            None => {
-                self.harness_status = HarnessStatus::Closed;
-                return;
-            }
+        let Some(stdout) = child.stdout.take() else {
+            self.harness_status = HarnessStatus::Closed;
+            return;
         };
         self.harness_child = Some(child);
 
@@ -1083,12 +1080,9 @@ impl App {
                 return;
             }
         };
-        let stdout = match child.stdout.take() {
-            Some(s) => s,
-            None => {
-                self.bus_status = BusStatus::Failed;
-                return;
-            }
+        let Some(stdout) = child.stdout.take() else {
+            self.bus_status = BusStatus::Failed;
+            return;
         };
         self.bus_child = Some(child);
 
@@ -2644,12 +2638,11 @@ impl App {
                     });
                     self.chat_pending = None;
                 }
-                Err(std::sync::mpsc::TryRecvError::Empty) => {}
-                Err(std::sync::mpsc::TryRecvError::Disconnected) => {
-                    // Sentinel Receiver from the persistent path — never
-                    // delivers. Don't clear chat_pending here, the child
-                    // event channel will signal completion.
-                }
+                // Empty = nothing ready yet.
+                // Disconnected = sentinel from the persistent path that never
+                // delivers; don't clear chat_pending here, the child event
+                // channel will signal completion.
+                Err(_) => {}
             }
         }
         self.trim_chat_messages();
@@ -2767,11 +2760,8 @@ impl App {
         // a literal command. Always available regardless of active tab.
         if self.input.is_empty() {
             match (key.modifiers, key.code) {
-                (KeyModifiers::NONE, KeyCode::Char('q' | 'Q')) => {
-                    self.should_quit = true;
-                    return;
-                }
-                (KeyModifiers::NONE, KeyCode::Esc) => {
+                (KeyModifiers::NONE, KeyCode::Char('q' | 'Q'))
+                | (KeyModifiers::NONE, KeyCode::Esc) => {
                     self.should_quit = true;
                     return;
                 }
@@ -3145,21 +3135,18 @@ fn render_memory_tab(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn render_status_tab(f: &mut Frame, app: &App, area: Rect) {
-    let status = match &app.status {
-        Some(s) => s,
-        None => {
-            let msg = Paragraph::new("Loading status... (polling kannaka status)")
-                .style(Style::default().fg(DIM).bg(BG))
-                .block(
-                    Block::default()
-                        .borders(Borders::ALL)
-                        .border_style(Style::default().fg(DIM))
-                        .style(Style::default().bg(BG))
-                        .title(" Status "),
-                );
-            f.render_widget(msg, area);
-            return;
-        }
+    let Some(status) = &app.status else {
+        let msg = Paragraph::new("Loading status... (polling kannaka status)")
+            .style(Style::default().fg(DIM).bg(BG))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(DIM))
+                    .style(Style::default().bg(BG))
+                    .title(" Status "),
+            );
+        f.render_widget(msg, area);
+        return;
     };
 
     // Split into gauges (left) and info (right)
