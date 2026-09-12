@@ -688,7 +688,9 @@ impl App {
             should_quit: false,
             last_paste_at: None,
             scroll_offset: 0,
-            last_status_poll: Instant::now() - Duration::from_secs(60), // force initial poll
+            last_status_poll: Instant::now()
+                .checked_sub(Duration::from_secs(60))
+                .unwrap_or_else(Instant::now), // force initial poll
             show_help: false,
             history: Vec::new(),
             history_idx: None,
@@ -724,7 +726,9 @@ impl App {
             cosmos_pending: None,
             cosmos_error: None,
             // Force an initial load the first time the Cosmos tab opens.
-            cosmos_last_load: Instant::now() - COSMOS_POLL_INTERVAL,
+            cosmos_last_load: Instant::now()
+                .checked_sub(COSMOS_POLL_INTERVAL)
+                .unwrap_or_else(Instant::now),
             harness_child: None,
             harness_stdin: None,
             harness_rx: None,
@@ -864,7 +868,7 @@ impl App {
     /// Begin (or continue) a turn: ensure the child is up, echo the user
     /// line, and send the user frame. The frame buffers in the pipe until
     /// the backend finishes loading the HRM and starts reading stdin.
-    fn harness_user_turn(&mut self, text: String) {
+    fn harness_user_turn(&mut self, text: &str) {
         if self.harness_child.is_none()
             || matches!(
                 self.harness_status,
@@ -873,7 +877,7 @@ impl App {
         {
             self.start_harness();
         }
-        self.push_harness(AgentLine::User(text.clone()));
+        self.push_harness(AgentLine::User(text.to_owned()));
         self.harness_status = HarnessStatus::Thinking;
         self.scroll_offset = 0;
         self.send_harness_frame(serde_json::json!({ "type": "user", "text": text }));
@@ -2025,7 +2029,7 @@ impl App {
                             )
                         };
                         self.push_harness(AgentLine::Notice(notice.into()));
-                        self.harness_user_turn(prompt.to_string());
+                        self.harness_user_turn(prompt);
                     }
                 }
                 Some(other) => self.push_harness(AgentLine::Notice(format!(
@@ -2045,7 +2049,7 @@ impl App {
                             "[agent is working — wait for it to finish]".into(),
                         ));
                     } else {
-                        self.harness_user_turn(input.clone());
+                        self.harness_user_turn(&input);
                     }
                 }
             }
@@ -2894,7 +2898,7 @@ impl App {
     /// flatten to spaces — the input is one logical line (Enter submits), so a
     /// multi-line paste becomes a single message instead of N submissions. Other
     /// control characters are dropped.
-    fn handle_paste(&mut self, text: String) {
+    fn handle_paste(&mut self, text: &str) {
         self.last_paste_at = Some(Instant::now());
         // Defensive: if a transport surfaced the bracketed-paste markers as
         // literal text (seen on some Windows console paths), strip them.
@@ -4806,7 +4810,7 @@ fn main() -> io::Result<()> {
             match event::read()? {
                 // Unix (and Windows once crossterm gains VT input) deliver a
                 // paste as a single event.
-                Event::Paste(text) => app.handle_paste(text),
+                Event::Paste(text) => app.handle_paste(&text),
                 // Only handle Press events — Windows emits both Press and Release
                 // for each keystroke, which would otherwise double every input.
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
@@ -4825,7 +4829,7 @@ fn main() -> io::Result<()> {
                     while event::poll(Duration::from_millis(20))? {
                         match event::read()? {
                             Event::Key(k) if k.kind == KeyEventKind::Press => extra.push(k),
-                            Event::Paste(t) => app.handle_paste(t),
+                            Event::Paste(t) => app.handle_paste(&t),
                             _ => {} // Release / Repeat / resize — ignore
                         }
                     }
@@ -4845,7 +4849,7 @@ fn main() -> io::Result<()> {
                                 app.handle_key(k);
                             }
                         } else {
-                            app.handle_paste(burst);
+                            app.handle_paste(&burst);
                         }
                     }
                 }
