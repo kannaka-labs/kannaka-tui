@@ -12,7 +12,7 @@
 
 `kannaka-tui` is the terminal harness for the [Kannaka constellation](https://github.com/NickFlach/kannaka-memory). A full-screen ratatui app that never links `kannaka-memory` as a library — every operation shells out to the `kannaka` CLI binary. Its headline surface is the **Agent** tab: an agentic coding loop (read / write / edit / bash / glob / grep, plus HRM memory tools) that drives `kannaka agent --json`, renders the live transcript, and gates every filesystem/shell mutation behind a human approval dialog. The other seven tabs — Memory, Status, Bus, Constellation, Dreams, Chat, Cosmos — are windows into the same wave-interference substrate.
 
-[![License](https://img.shields.io/badge/license-MIT-blueviolet)]() [![Rust](https://img.shields.io/badge/rust-2021-orange)]() [![ratatui](https://img.shields.io/badge/ratatui-0.29-purple)]()
+[![License](https://img.shields.io/badge/license-Space%20Child%20v1.0-blueviolet)]() [![Rust](https://img.shields.io/badge/rust-2021-orange)]() [![ratatui](https://img.shields.io/badge/ratatui-0.29-purple)]()
 
 ---
 
@@ -191,4 +191,4 @@ The TUI is a **pure frontend**: it never links `kannaka-memory` as a Rust librar
 
 ## License
 
-MIT. See [LICENSE](./LICENSE).
+Space Child License v1.0. See [LICENSE](./LICENSE).
