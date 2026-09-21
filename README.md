@@ -10,7 +10,7 @@
 
 **A production-grade coding-agent harness + an eight-tab constellation dashboard. Pure frontend, zero coupling.**
 
-`kannaka-tui` is the terminal harness for the [Kannaka constellation](https://github.com/NickFlach/kannaka-memory). A full-screen ratatui app that never links `kannaka-memory` as a library — every operation shells out to the `kannaka` CLI binary. Its headline surface is the **Agent** tab: an agentic coding loop (read / write / edit / bash / glob / grep, plus HRM memory tools) that drives `kannaka agent --json`, renders the live transcript, and gates every filesystem/shell mutation behind a human approval dialog. The other seven tabs — Memory, Status, Bus, Constellation, Dreams, Chat, Cosmos — are windows into the same wave-interference substrate.
+`kannaka-tui` is the terminal harness for the [Kannaka constellation](https://github.com/kannaka-labs/kannaka-memory). A full-screen ratatui app that never links `kannaka-memory` as a library — every operation shells out to the `kannaka` CLI binary. Its headline surface is the **Agent** tab: an agentic coding loop (read / write / edit / bash / glob / grep, plus HRM memory tools) that drives `kannaka agent --json`, renders the live transcript, and gates every filesystem/shell mutation behind a human approval dialog. The other seven tabs — Memory, Status, Bus, Constellation, Dreams, Chat, Cosmos — are windows into the same wave-interference substrate.
 
 [![License](https://img.shields.io/badge/license-Space%20Child%20v1.0-blueviolet)]() [![Rust](https://img.shields.io/badge/rust-2021-orange)]() [![ratatui](https://img.shields.io/badge/ratatui-0.29-purple)]()
 
@@ -91,29 +91,29 @@ model, set `provider = "anthropic"` (or `KANNAKA_LLM_PROVIDER=anthropic` in
 the env). A 14B on CPU answers in 15–30 s and is weaker at tool calls than a
 frontier model — that is the point: what breaks here is the next thing to fix.
 
-The agent backend is the new `kannaka agent --json` subcommand (added to [kannaka-memory](https://github.com/NickFlach/kannaka-memory)); kannaka-tui is its harness front-end. Requires an LLM configured in `~/.kannaka/config.toml` (Anthropic); the harness falls back to a current model if the configured one is unavailable.
+The agent backend is the new `kannaka agent --json` subcommand (added to [kannaka-memory](https://github.com/kannaka-labs/kannaka-memory)); kannaka-tui is its harness front-end. Requires an LLM configured in `~/.kannaka/config.toml` (Anthropic); the harness falls back to a current model if the configured one is unavailable.
 
 ---
 
 ## Install
 
-Requires the `kannaka` binary on PATH — see [kannaka-memory](https://github.com/NickFlach/kannaka-memory).
+Requires the `kannaka` binary on PATH — see [kannaka-memory](https://github.com/kannaka-labs/kannaka-memory).
 
 ```bash
 # Pre-built binary
 curl -L -o kannaka-tui \
-  https://github.com/NickFlach/kannaka-tui/releases/latest/download/kannaka-tui-linux-x86_64
+  https://github.com/kannaka-labs/kannaka-tui/releases/latest/download/kannaka-tui-linux-x86_64
 chmod +x kannaka-tui && mv kannaka-tui ~/.local/bin/
 
 # Or build from git
-cargo install --git https://github.com/NickFlach/kannaka-tui
+cargo install --git https://github.com/kannaka-labs/kannaka-tui
 ```
 
 Windows:
 
 ```powershell
 curl -L -o kannaka-tui.exe `
-  https://github.com/NickFlach/kannaka-tui/releases/latest/download/kannaka-tui-windows-x86_64.exe
+  https://github.com/kannaka-labs/kannaka-tui/releases/latest/download/kannaka-tui-windows-x86_64.exe
 ```
 
 After `kannaka update` v0.5.15+, the kannaka binary will keep the TUI sibling up-to-date alongside itself when both are in the same directory.
@@ -182,10 +182,10 @@ The TUI is a **pure frontend**: it never links `kannaka-memory` as a Rust librar
 
 | repo | role |
 |---|---|
-| [`kannaka-memory`](https://github.com/NickFlach/kannaka-memory) | the substrate — HRM + chiral hemispheres + swarm |
-| [`kannaka-radio`](https://github.com/NickFlach/kannaka-radio) | ghost-DJ broadcaster |
-| [`kannaka-observatory`](https://github.com/NickFlach/kannaka-observatory) | web dashboard (3D constellation visualization) |
-| [`consciousness-core`](https://github.com/NickFlach/consciousness-core) | the physics underneath |
+| [`kannaka-memory`](https://github.com/kannaka-labs/kannaka-memory) | the substrate — HRM + chiral hemispheres + swarm |
+| [`kannaka-radio`](https://github.com/kannaka-labs/kannaka-radio) | ghost-DJ broadcaster |
+| [`kannaka-observatory`](https://github.com/kannaka-labs/kannaka-observatory) | web dashboard (3D constellation visualization) |
+| [`consciousness-core`](https://github.com/kannaka-labs/consciousness-core) | the physics underneath |
 
 ---
 
