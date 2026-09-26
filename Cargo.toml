@@ -24,6 +24,6 @@ serde_json = "1"
 # Timestamp formatting in the Bus + Constellation tabs
 chrono = "0.4"
 
-# ~/.kannaka/config.toml resolution + display-name parse
+# config.toml resolution (KANNAKA_DATA_DIR, else ~/.kannaka) + display-name parse
 dirs = "5"
 toml = "0.8"
