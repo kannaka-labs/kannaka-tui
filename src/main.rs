@@ -83,6 +83,26 @@ fn run_capture(
     }
 }
 
+/// The Kannaka data directory, resolved exactly as the `kannaka` CLI does
+/// (`KannakaConfig::data_dir()` in kannaka-memory): `KANNAKA_DATA_DIR`
+/// wins, then `~/.kannaka`, then a relative `.kannaka`. Every TUI lookup
+/// of on-disk Kannaka state must go through this so a relocated install
+/// shows the same identity the CLI children are running as.
+fn kannaka_data_dir() -> std::path::PathBuf {
+    if let Ok(dir) = std::env::var("KANNAKA_DATA_DIR") {
+        return std::path::PathBuf::from(dir);
+    }
+    if let Some(home) = dirs::home_dir() {
+        return home.join(".kannaka");
+    }
+    std::path::PathBuf::from(".kannaka")
+}
+
+/// `config.toml` inside the data directory (`KannakaConfig::config_path()`).
+fn kannaka_config_path() -> std::path::PathBuf {
+    kannaka_data_dir().join("config.toml")
+}
+
 /// One constellation app as reported by `kannaka constellation`. The CLI
 /// prints human-readable lines (`✓ Name   URL` / `✗ Name   URL`) rather
 /// than JSON, so the Cosmos tab parses them by the leading status glyph.
@@ -1330,9 +1350,7 @@ impl App {
     }
 
     fn load_agent_name() -> String {
-        let config_path = dirs::home_dir()
-            .map(|h| h.join(".kannaka/config.toml"))
-            .unwrap_or_default();
+        let config_path = kannaka_config_path();
         if config_path.exists() {
             if let Ok(content) = std::fs::read_to_string(&config_path) {
                 // Parse TOML for agent.id or agent.display_name
@@ -5369,5 +5387,71 @@ mod tests {
             QOS_BOOT_GRAPHICAL_PROMPT.contains("lab_qos_swarm_bridge"),
             "QOS_BOOT_GRAPHICAL_PROMPT must use lab_qos_swarm_bridge to join the swarm"
         );
+    }
+
+    // ---- #42: the header identity must honour KANNAKA_DATA_DIR ----
+
+    /// Serialises the tests that mutate `KANNAKA_DATA_DIR` — the test
+    /// harness runs tests on parallel threads sharing one environment.
+    static DATA_DIR_ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    /// A fresh, unique temp dir (never the user's real `~/.kannaka`).
+    fn scratch_data_dir(tag: &str) -> std::path::PathBuf {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let dir = std::env::temp_dir().join(format!(
+            "kannaka-tui-test-{tag}-{}-{nanos}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn agent_name_reads_config_from_kannaka_data_dir() {
+        let _guard = DATA_DIR_ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let dir = scratch_data_dir("agent-name");
+        std::fs::write(
+            dir.join("config.toml"),
+            "[agent]\nid = \"relocated-id\"\ndisplay_name = \"relocated-agent-42\"\n",
+        )
+        .unwrap();
+        let prev = std::env::var_os("KANNAKA_DATA_DIR");
+        std::env::set_var("KANNAKA_DATA_DIR", &dir);
+
+        let name = App::load_agent_name();
+
+        match prev {
+            Some(v) => std::env::set_var("KANNAKA_DATA_DIR", v),
+            None => std::env::remove_var("KANNAKA_DATA_DIR"),
+        }
+        let _ = std::fs::remove_dir_all(&dir);
+        assert_eq!(name, "relocated-agent-42");
+    }
+
+    #[test]
+    fn data_dir_resolver_mirrors_kannaka_cli_precedence() {
+        // Pure path resolution — no file under the real home is touched.
+        let _guard = DATA_DIR_ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let prev = std::env::var_os("KANNAKA_DATA_DIR");
+        let dir = std::env::temp_dir().join("kannaka-tui-test-resolver");
+
+        std::env::set_var("KANNAKA_DATA_DIR", &dir);
+        let relocated = (kannaka_data_dir(), kannaka_config_path());
+        std::env::remove_var("KANNAKA_DATA_DIR");
+        let fallback = kannaka_data_dir();
+
+        match prev {
+            Some(v) => std::env::set_var("KANNAKA_DATA_DIR", v),
+            None => std::env::remove_var("KANNAKA_DATA_DIR"),
+        }
+        assert_eq!(relocated.0, dir);
+        assert_eq!(relocated.1, dir.join("config.toml"));
+        let expected = dirs::home_dir()
+            .map(|h| h.join(".kannaka"))
+            .unwrap_or_else(|| std::path::PathBuf::from(".kannaka"));
+        assert_eq!(fallback, expected);
     }
 }
