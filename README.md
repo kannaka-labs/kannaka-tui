@@ -186,6 +186,7 @@ The TUI is a **pure frontend**: it never links `kannaka-memory` as a Rust librar
 | [`kannaka-radio`](https://github.com/kannaka-labs/kannaka-radio) | ghost-DJ broadcaster |
 | [`kannaka-observatory`](https://github.com/kannaka-labs/kannaka-observatory) | web dashboard (3D constellation visualization) |
 | [`consciousness-core`](https://github.com/kannaka-labs/consciousness-core) | the physics underneath |
+| [`QuantumOS`](https://github.com/kannaka-labs/QuantumOS/tree/main/tools/qos-hub) | the hub: one policy-gated MCP endpoint for the constellation's CLIs and MCP servers (allow / ask / deny per tool). The MCP client the TUI is to become (#45) would point here first |
 
 ---
 
